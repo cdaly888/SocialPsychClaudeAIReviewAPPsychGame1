@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AP Psychology Quiz — Unit 4.1–4.3</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0d;
+    --paper: #f5f0e8;
+    --accent: #c0392b;
+    --accent2: #2c3e50;
+    --correct: #27ae60;
+    --wrong: #c0392b;
+    --muted: #7f8c8d;
+    --card: #fffdf8;
+    --border: #d5cfc4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  header {
+    background: var(--accent2);
+    color: white;
+    padding: 36px 40px 28px;
+    border-bottom: 4px solid var(--accent);
+  }
+
+  header .label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 8px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  header .subtitle {
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0.7;
+    font-weight: 300;
+  }
+
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    height: 4px;
+    margin-top: 20px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    border-radius: 2px;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    opacity: 0.55;
+    margin-top: 6px;
+  }
+
+  .quiz-container {
+    max-width: 780px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+
+  .question-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 36px 40px;
+    margin-bottom: 20px;
+    box-shadow: 2px 4px 16px rgba(0,0,0,0.05);
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .question-card.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .q-num {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .q-topic {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .q-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    line-height: 1.5;
+    margin-bottom: 28px;
+    color: var(--ink);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 18px;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14.5px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    color: var(--ink);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.4;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent2);
+    background: #eef2f5;
+  }
+
+  .option-btn .letter {
+    font-weight: 700;
+    color: var(--muted);
+    min-width: 18px;
+    font-size: 13px;
+    margin-top: 1px;
+  }
+
+  .option-btn.correct {
+    border-color: var(--correct);
+    background: #eafaf1;
+    color: #1a5c38;
+  }
+
+  .option-btn.correct .letter { color: var(--correct); }
+
+  .option-btn.wrong {
+    border-color: var(--wrong);
+    background: #fdedec;
+    color: #7b241c;
+  }
+
+  .option-btn.wrong .letter { color: var(--wrong); }
+
+  .option-btn:disabled { cursor: default; }
+
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 3px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    display: none;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: #eafaf1; border-left: 3px solid var(--correct); color: #1a5c38; }
+  .feedback.wrong-fb { background: #fdedec; border-left: 3px solid var(--wrong); color: #7b241c; }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 11px 24px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .btn-primary {
+    background: var(--accent2);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #1a252f; }
+  .btn-primary:disabled { opacity: 0.3; cursor: default; }
+
+  .score-display {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Results screen */
+  #results-screen {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 50px 40px;
+    text-align: center;
+    box-shadow: 2px 4px 16px rgba(0,0,0,0.05);
+  }
+
+  #results-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    margin-bottom: 10px;
+  }
+
+  .score-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--accent2);
+    line-height: 1;
+    margin: 20px 0 8px;
+  }
+
+  .score-pct {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  .breakdown {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 24px 0 32px;
+    flex-wrap: wrap;
+  }
+
+  .breakdown-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 22px;
+    min-width: 120px;
+  }
+
+  .breakdown-item .bi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .breakdown-item .bi-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .bi-val.green { color: var(--correct); }
+  .bi-val.red { color: var(--wrong); }
+
+  .grade-msg {
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 30px;
+    line-height: 1.6;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-restart {
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+
+  .btn-restart:hover { background: #96281b; }
+
+  @media (max-width: 600px) {
+    header { padding: 24px 20px 20px; }
+    .question-card { padding: 24px 20px; }
+    .q-text { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">AP Psychology · Unit 4</div>
+  <h1>Social Psychology<br>& Personality</h1>
+  <div class="subtitle">Topics 4.1–4.3 &nbsp;·&nbsp; 40 Questions</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="progress-label">Question 1 of 40</div>
+</header>
+
+<div class="quiz-container" id="quiz-area">
+  <!-- Questions injected by JS -->
+  <div id="results-screen">
+    <div style="font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Quiz Complete</div>
+    <h2>Your Results</h2>
+    <div class="score-big" id="score-big"></div>
+    <div class="score-pct" id="score-pct"></div>
+    <div class="breakdown">
+      <div class="breakdown-item"><div class="bi-label">Correct</div><div class="bi-val green" id="r-correct"></div></div>
+      <div class="breakdown-item"><div class="bi-label">Incorrect</div><div class="bi-val red" id="r-wrong"></div></div>
+      <div class="breakdown-item"><div class="bi-label">AP Score Est.</div><div class="bi-val" id="r-ap"></div></div>
+    </div>
+    <div class="grade-msg" id="grade-msg"></div>
+    <button class="btn-restart" onclick="restartQuiz()">↺ Retake Quiz</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  // --- TOPIC 4.1: Attribution Theory and Person Perception ---
+  {
+    topic: "4.1",
+    q: "A student fails a test and thinks, 'I'm just not smart enough for this class.' This is an example of which type of attribution?",
+    options: ["Situational attribution","Dispositional attribution","Actor-observer bias","Self-serving bias"],
+    answer: 1,
+    exp: "Dispositional attributions explain behavior through internal qualities (like intelligence or personality). Blaming a lack of intelligence is dispositional."
+  },
+  {
+    topic: "4.1",
+    q: "A teacher believes her student fails tests because the student is lazy, ignoring that the student works two jobs. This best illustrates:",
+    options: ["Self-serving bias","Mere exposure effect","Fundamental attribution error","Relative deprivation"],
+    answer: 2,
+    exp: "The fundamental attribution error is the tendency to overemphasize dispositional factors (laziness) while underestimating situational factors (working two jobs)."
+  },
+  {
+    topic: "4.1",
+    q: "When you succeed on an exam you say it was because of your effort, but when you fail you blame a bad professor. This pattern reflects:",
+    options: ["Fundamental attribution error","Self-serving bias","Actor-observer bias","Explanatory style"],
+    answer: 1,
+    exp: "Self-serving bias is the tendency to attribute successes to internal causes and failures to external causes to protect self-esteem."
+  },
+  {
+    topic: "4.1",
+    q: "Which of the following best describes actor-observer bias?",
+    options: [
+      "Actors overestimate how much others agree with them",
+      "Observers attribute others' behavior to the situation while actors attribute their own to disposition",
+      "Actors attribute their own behavior to the situation while observers attribute others' behavior to disposition",
+      "Both actors and observers rely on dispositional attributions equally"
+    ],
+    answer: 2,
+    exp: "Actor-observer bias: WE explain our own behavior situationally ('I was stressed') but others' behavior dispositionally ('they're always like that')."
+  },
+  {
+    topic: "4.1",
+    q: "An optimistic explanatory style would most likely lead someone to interpret a bad event as:",
+    options: [
+      "Permanent, pervasive, and personal",
+      "Temporary, specific, and external",
+      "Internal, stable, and global",
+      "Dispositional and universal"
+    ],
+    answer: 1,
+    exp: "Optimistic explanatory style sees bad events as temporary (not permanent), specific (not pervasive), and external (not personal)."
+  },
+  {
+    topic: "4.1",
+    q: "A person who views bad events as permanent, pervasive, and personal has a(n) __________ explanatory style.",
+    options: ["Optimistic","Attributional","Pessimistic","Self-serving"],
+    answer: 2,
+    exp: "A pessimistic explanatory style interprets negative events as stable, global, and internal — the 3 P's: permanent, pervasive, personal."
+  },
+  {
+    topic: "4.1",
+    q: "Which concept explains why people tend to prefer a song more after hearing it repeatedly on the radio?",
+    options: ["Self-fulfilling prophecy","Social comparison","Mere exposure effect","Relative deprivation"],
+    answer: 2,
+    exp: "The mere exposure effect: repeated exposure to a stimulus increases liking for it, even without conscious awareness."
+  },
+  {
+    topic: "4.1",
+    q: "A teacher is told a student is gifted. She calls on that student more, gives more feedback, and the student's grades improve. This is best explained by:",
+    options: ["Downward social comparison","Mere exposure effect","Self-serving bias","Self-fulfilling prophecy"],
+    answer: 3,
+    exp: "A self-fulfilling prophecy occurs when a belief about someone causes behaviors that ultimately confirm the original belief."
+  },
+  {
+    topic: "4.1",
+    q: "After comparing herself to a classmate who earned a lower grade, Maya feels better about her own B+. This is an example of:",
+    options: ["Upward social comparison","Downward social comparison","Relative deprivation","Self-serving bias"],
+    answer: 1,
+    exp: "Downward social comparison involves comparing oneself to those doing worse, which boosts self-esteem."
+  },
+  {
+    topic: "4.1",
+    q: "A college student feels her standard of living is unfair when she sees how wealthy her roommates are, even though she previously felt fine about her finances. This illustrates:",
+    options: ["Downward social comparison","Ethnocentrism","Relative deprivation","Fundamental attribution error"],
+    answer: 2,
+    exp: "Relative deprivation is feeling deprived not in absolute terms but relative to others around you."
+  },
+  {
+    topic: "4.1",
+    q: "Locus of control refers to:",
+    options: [
+      "The degree to which people believe outcomes are controlled by themselves vs. external forces",
+      "The tendency to attribute others' behavior to personality",
+      "A bias that causes people to overestimate social agreement",
+      "The effect of repeated exposure on liking"
+    ],
+    answer: 0,
+    exp: "Locus of control (Rotter) is the belief about whether outcomes are controlled internally (by yourself) or externally (by luck, fate, others)."
+  },
+  {
+    topic: "4.1",
+    q: "A student who studies hard because she believes hard work determines her grades demonstrates a(n):",
+    options: ["External locus of control","Pessimistic explanatory style","Internal locus of control","Situational attribution"],
+    answer: 2,
+    exp: "Internal locus of control means believing that your own actions and efforts determine outcomes."
+  },
+  {
+    topic: "4.1",
+    q: "Upward social comparison most likely leads to:",
+    options: [
+      "Increased self-esteem",
+      "Inspiration or feelings of inadequacy, depending on context",
+      "Reduced relative deprivation",
+      "Downward attribution error"
+    ],
+    answer: 1,
+    exp: "Upward social comparison (comparing to those doing better) can inspire or motivate, but can also cause feelings of inadequacy or envy."
+  },
+
+  // --- TOPIC 4.2: Attitude Formation and Attitude Change ---
+  {
+    topic: "4.2",
+    q: "A stereotype is best defined as:",
+    options: [
+      "An explicit negative attitude toward a group",
+      "Discriminatory behavior based on group membership",
+      "A generalized concept about a group of people",
+      "An implicit preference measured by reaction time"
+    ],
+    answer: 2,
+    exp: "Stereotypes are generalized beliefs or concepts about a group. They can be positive or negative and reduce cognitive load when making judgments."
+  },
+  {
+    topic: "4.2",
+    q: "Stereotypes can be functional because they:",
+    options: [
+      "Eliminate in-group bias",
+      "Reduce cognitive load when making decisions",
+      "Produce more accurate social judgments",
+      "Prevent the fundamental attribution error"
+    ],
+    answer: 1,
+    exp: "Stereotypes serve as cognitive shortcuts — they reduce the mental effort needed to process information about individuals by using group-level generalizations."
+  },
+  {
+    topic: "4.2",
+    q: "The tendency to see members of an out-group as all alike is called:",
+    options: ["In-group bias","Ethnocentrism","Out-group homogeneity bias","Stereotype threat"],
+    answer: 2,
+    exp: "Out-group homogeneity bias is the perception that members of an out-group are more similar to each other than members of one's own in-group."
+  },
+  {
+    topic: "4.2",
+    q: "Judging other cultures by the standards of one's own culture is called:",
+    options: ["Multiculturalism","Collectivism","Ethnocentrism","In-group bias"],
+    answer: 2,
+    exp: "Ethnocentrism is evaluating other cultures according to the standards and values of one's own culture, often viewing one's own as superior."
+  },
+  {
+    topic: "4.2",
+    q: "The just-world phenomenon refers to the belief that:",
+    options: [
+      "People are treated equally regardless of status",
+      "Victims must have done something to deserve their misfortune",
+      "The world is inherently unfair to out-group members",
+      "Social norms ensure justice for all members of society"
+    ],
+    answer: 1,
+    exp: "The just-world phenomenon is the belief that people get what they deserve — it can lead to victim-blaming and is an implicit attitude that reflects negative evaluations of others."
+  },
+  {
+    topic: "4.2",
+    q: "Implicit attitudes differ from explicit attitudes because implicit attitudes are:",
+    options: [
+      "Deliberately chosen and clearly stated",
+      "Held unconsciously or without acknowledgment",
+      "Always positive toward in-group members",
+      "Based on direct personal experience only"
+    ],
+    answer: 1,
+    exp: "Implicit attitudes operate below the level of conscious awareness. People may hold them without realizing it or being willing to acknowledge them."
+  },
+  {
+    topic: "4.2",
+    q: "After finding out that an online rumor she spread was false, Keisha continues to believe and share it. This best demonstrates:",
+    options: ["Cognitive dissonance","Belief perseverance","Confirmation bias","Out-group homogeneity bias"],
+    answer: 1,
+    exp: "Belief perseverance is the tendency to maintain a belief even in the face of evidence that contradicts it."
+  },
+  {
+    topic: "4.2",
+    q: "Seeking out only news sources that confirm one's existing political views is an example of:",
+    options: ["Cognitive dissonance","Belief perseverance","Confirmation bias","The halo effect"],
+    answer: 2,
+    exp: "Confirmation bias is the tendency to search for, interpret, and remember information that confirms one's preexisting beliefs."
+  },
+  {
+    topic: "4.2",
+    q: "A person who preaches about healthy eating but frequently eats fast food experiences discomfort. According to Festinger, this person will most likely:",
+    options: [
+      "Ignore the inconsistency entirely",
+      "Change their behavior or rationalize to reduce the mental discomfort",
+      "Increase the behavior that conflicts with their attitude",
+      "Develop an external locus of control"
+    ],
+    answer: 1,
+    exp: "Cognitive dissonance is the mental discomfort from conflicting attitudes and behaviors. People are motivated to reduce it by changing their attitude, behavior, or rationalizing."
+  },
+  {
+    topic: "4.2",
+    q: "In-group bias refers to the tendency to:",
+    options: [
+      "Discriminate against all minority groups",
+      "View one's own group more favorably than out-groups",
+      "Assume all in-group members are alike",
+      "Apply stereotypes only to members of one's own group"
+    ],
+    answer: 1,
+    exp: "In-group bias is the tendency to favor one's own group over others, leading to preferential treatment of in-group members."
+  },
+  {
+    topic: "4.2",
+    q: "Cognitive dissonance is MOST likely to produce attitude change when:",
+    options: [
+      "The behavior is very easy to change",
+      "The inconsistency is trivial and unimportant",
+      "The conflicting behavior cannot easily be undone or justified",
+      "The behavior is rewarded by external incentives"
+    ],
+    answer: 2,
+    exp: "Dissonance is strongest and most likely to change attitudes when behavior cannot easily be undone and no external justification exists."
+  },
+  {
+    topic: "4.2",
+    q: "Which of the following is the BEST example of prejudice?",
+    options: [
+      "Hiring someone who is less qualified based on their race",
+      "Believing all elderly drivers are dangerous",
+      "Refusing service to someone based on religion",
+      "Assuming all members of an out-group look alike"
+    ],
+    answer: 1,
+    exp: "Prejudice is an attitude (feeling or belief), while discrimination is behavior. Believing elderly drivers are dangerous is a prejudiced attitude based on group membership."
+  },
+
+  // --- TOPIC 4.3: Psychology of Social Situations ---
+  {
+    topic: "4.3",
+    q: "Informational social influence occurs when people:",
+    options: [
+      "Conform to avoid social rejection",
+      "Look to others as a source of information about what is correct",
+      "Obey authority figures out of fear",
+      "Act differently in groups than when alone"
+    ],
+    answer: 1,
+    exp: "Informational social influence: we look to others for guidance about what's correct or appropriate, especially in ambiguous situations."
+  },
+  {
+    topic: "4.3",
+    q: "Normative social influence leads to conformity because people want to:",
+    options: [
+      "Determine the correct answer in ambiguous situations",
+      "Gain accurate information from the group",
+      "Be liked or accepted and avoid social rejection",
+      "Follow the orders of authority figures"
+    ],
+    answer: 2,
+    exp: "Normative social influence is conforming to fit in and be accepted by others, even when you privately disagree."
+  },
+  {
+    topic: "4.3",
+    q: "Asch's conformity experiments demonstrated that people often give obviously wrong answers in order to:",
+    options: [
+      "Gain information from the group",
+      "Conform to the majority and avoid standing out",
+      "Obey the experimenter's authority",
+      "Reduce cognitive dissonance"
+    ],
+    answer: 1,
+    exp: "Asch found that participants conformed to clearly incorrect group answers due to normative social influence — to avoid standing out or being rejected."
+  },
+  {
+    topic: "4.3",
+    q: "Milgram's obedience experiments primarily demonstrated that:",
+    options: [
+      "People are naturally aggressive toward others",
+      "Conformity increases when group size decreases",
+      "People will administer apparent harm to others when directed by an authority figure",
+      "Diffusion of responsibility prevents individual action"
+    ],
+    answer: 2,
+    exp: "Milgram showed that ordinary people would deliver apparently dangerous electric shocks when instructed by an authority figure, highlighting situational power."
+  },
+  {
+    topic: "4.3",
+    q: "The elaboration likelihood model proposes two routes to persuasion. Someone carefully evaluating the logic of a political argument is using the:",
+    options: ["Peripheral route","Central route","Halo effect","Foot-in-the-door route"],
+    answer: 1,
+    exp: "The central route involves deep cognitive processing of arguments and evidence. The peripheral route relies on superficial cues like attractiveness or credibility."
+  },
+  {
+    topic: "4.3",
+    q: "When we assume an attractive person is also intelligent and kind, we are demonstrating:",
+    options: ["In-group bias","The foot-in-the-door technique","The halo effect","Normative social influence"],
+    answer: 2,
+    exp: "The halo effect is a peripheral persuasion cue — a positive impression in one area (attractiveness) influences judgments in unrelated areas (intelligence, kindness)."
+  },
+  {
+    topic: "4.3",
+    q: "A charity asks you to sign a small online petition, then later asks for a large donation. This is the:",
+    options: ["Door-in-the-face technique","Foot-in-the-door technique","Peripheral route to persuasion","Reciprocity norm"],
+    answer: 1,
+    exp: "The foot-in-the-door technique starts with a small request to gain compliance, then follows with a larger request."
+  },
+  {
+    topic: "4.3",
+    q: "A salesperson asks you to donate $500 to a cause; you decline, so they ask for $20. You agree. This illustrates the:",
+    options: ["Foot-in-the-door technique","Door-in-the-face technique","Central route to persuasion","Social reciprocity norm"],
+    answer: 1,
+    exp: "The door-in-the-face technique starts with a large request (which is refused), then follows with a smaller, more reasonable request — which people are more likely to accept."
+  },
+  {
+    topic: "4.3",
+    q: "Group polarization refers to the tendency for groups to:",
+    options: [
+      "Suppress minority opinions to reach consensus",
+      "Make more extreme decisions than individuals would alone",
+      "Assign tasks unequally among members",
+      "Rely on the most dominant member's opinion"
+    ],
+    answer: 1,
+    exp: "Group polarization: discussion among like-minded people tends to push the group toward more extreme versions of its initial views."
+  },
+  {
+    topic: "4.3",
+    q: "Groupthink is MOST likely to occur when a group:",
+    options: [
+      "Includes diverse members with varied viewpoints",
+      "Has a leader who encourages dissent",
+      "Is highly cohesive and values consensus over critical thinking",
+      "Is composed of strangers with no common goal"
+    ],
+    answer: 2,
+    exp: "Groupthink happens when a cohesive group prioritizes harmony and conformity over realistic appraisal — dissent is suppressed, leading to poor decisions."
+  },
+  {
+    topic: "4.3",
+    q: "Social loafing refers to the tendency to:",
+    options: [
+      "Work harder when being evaluated by a group",
+      "Exert less effort when working in a group than when working alone",
+      "Lose personal identity in a crowd",
+      "Conform to group norms to gain acceptance"
+    ],
+    answer: 1,
+    exp: "Social loafing: people put in less effort when working collectively because individual accountability is reduced."
+  },
+  {
+    topic: "4.3",
+    q: "Diffusion of responsibility BEST explains why individuals are less likely to help in an emergency when:",
+    options: [
+      "The victim is a member of their in-group",
+      "They have an internal locus of control",
+      "Many other bystanders are present",
+      "They previously helped in a similar situation"
+    ],
+    answer: 2,
+    exp: "Diffusion of responsibility: with more bystanders present, each person feels less personal responsibility to act — contributing to the bystander effect."
+  },
+  {
+    topic: "4.3",
+    q: "Deindividuation is most likely to occur when:",
+    options: [
+      "People are given specific roles and responsibilities",
+      "Group members feel personally accountable for outcomes",
+      "Individuals feel anonymous within a crowd or group",
+      "A superordinate goal unites competing groups"
+    ],
+    answer: 2,
+    exp: "Deindividuation: anonymity in a group reduces self-awareness and personal accountability, which can lead to behaviors people wouldn't do alone."
+  },
+  {
+    topic: "4.3",
+    q: "When an athlete performs better in front of a crowd than in practice, this is known as:",
+    options: ["Social loafing","Deindividuation","Social facilitation","Group polarization"],
+    answer: 2,
+    exp: "Social facilitation: the presence of others improves performance on well-learned or simple tasks."
+  },
+  {
+    topic: "4.3",
+    q: "The false consensus effect is the tendency to:",
+    options: [
+      "Underestimate how much others agree with you",
+      "Overestimate how much others share your beliefs and behaviors",
+      "Assume out-group members are more homogeneous than in-group members",
+      "Believe the world is generally fair and just"
+    ],
+    answer: 1,
+    exp: "False consensus effect: we overestimate the degree to which others think and behave like we do."
+  },
+  {
+    topic: "4.3",
+    q: "Rival sports teams agree to build a community playground together. This is an example of:",
+    options: [
+      "Social loafing","Deindividuation","Superordinate goal","Social reciprocity norm"
+    ],
+    answer: 2,
+    exp: "Superordinate goals are shared goals that require cooperation between competing groups, reducing conflict and negative stereotyping."
+  },
+  {
+    topic: "4.3",
+    q: "An I/O psychologist would most likely study:",
+    options: [
+      "How brain chemistry affects mood disorders",
+      "Best practices for employee management and workplace relationships",
+      "How children develop moral reasoning",
+      "Memory consolidation during sleep"
+    ],
+    answer: 1,
+    exp: "Industrial-organizational (I/O) psychologists study workplace behavior — including management, teamwork, motivation, and burnout."
+  },
+  {
+    topic: "4.3",
+    q: "Altruism refers to behavior that is:",
+    options: [
+      "Motivated by the expectation of future rewards",
+      "Selfless and done for the benefit of others",
+      "Based on social reciprocity norms",
+      "Motivated by reducing personal guilt"
+    ],
+    answer: 1,
+    exp: "Altruism is selfless helping behavior that benefits others without expectation of personal gain — though some researchers question whether true altruism exists."
+  },
+  {
+    topic: "4.3",
+    q: "The social reciprocity norm suggests that people help others because:",
+    options: [
+      "They feel a sense of moral duty to those in need",
+      "They expect to receive help in return in the future",
+      "Helping reduces cognitive dissonance",
+      "Large groups encourage prosocial behavior"
+    ],
+    answer: 1,
+    exp: "The social reciprocity norm: we help others because we expect them (or others) to help us in return — creating a kind of social debt."
+  },
+  {
+    topic: "4.3",
+    q: "The bystander effect predicts that a person is MOST likely to receive help when:",
+    options: [
+      "Many bystanders are present in a public place",
+      "Only one or a few bystanders are present",
+      "Bystanders are all members of different social groups",
+      "The emergency occurs in a large city"
+    ],
+    answer: 1,
+    exp: "The bystander effect: the more witnesses present, the less likely any one person is to help (diffusion of responsibility). Fewer bystanders = more helping."
+  },
+  {
+    topic: "4.3",
+    q: "Which scenario is the BEST example of a social trap?",
+    options: [
+      "Two rival groups unite to fight a common threat",
+      "A town overuses a shared water supply for individual gain, depleting it for everyone",
+      "A company adopts diversity training to reduce ethnocentrism",
+      "Athletes perform better in front of audiences due to social facilitation"
+    ],
+    answer: 1,
+    exp: "A social trap occurs when individuals act in their own self-interest in ways that harm the larger group — like overusing a shared resource (tragedy of the commons)."
+  },
+  {
+    topic: "4.3",
+    q: "Individualistic cultures are more likely to emphasize:",
+    options: [
+      "Group harmony and interdependence",
+      "Personal achievement and independence",
+      "Superordinate goals over individual success",
+      "In-group loyalty above personal goals"
+    ],
+    answer: 1,
+    exp: "Individualistic cultures prioritize personal goals, independence, and self-expression. Collectivist cultures emphasize group harmony and interdependence."
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = 0;
+
+function buildQuiz() {
+  const area = document.getElementById('quiz-area');
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card' + (i === 0 ? ' active' : '');
+    card.id = 'qcard-' + i;
+    const letters = ['A','B','C','D'];
+    card.innerHTML = `
+      <div class="q-meta">
+        <span class="q-num">Question ${i+1} of ${questions.length}</span>
+        <span class="q-topic">Topic ${q.topic}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${q.options.map((opt, oi) => `
+          <button class="option-btn" onclick="selectAnswer(${i}, ${oi})" id="opt-${i}-${oi}">
+            <span class="letter">${letters[oi]}</span>
+            <span>${opt}</span>
+          </button>`).join('')}
+      </div>
+      <div class="feedback" id="fb-${i}"></div>
+      <div class="nav-row">
+        <div class="score-display" id="score-disp-${i}">Score: ${score}/${i}</div>
+        <button class="btn btn-primary" id="next-btn-${i}" onclick="nextQuestion()" disabled>
+          ${i === questions.length - 1 ? 'See Results →' : 'Next →'}
+        </button>
+      </div>
+    `;
+    area.insertBefore(card, document.getElementById('results-screen'));
+  });
+}
+
+function selectAnswer(qIdx, optIdx) {
+  const q = questions[qIdx];
+  const fb = document.getElementById('fb-' + qIdx);
+  const nextBtn = document.getElementById('next-btn-' + qIdx);
+  const options = document.querySelectorAll(`#qcard-${qIdx} .option-btn`);
+  
+  options.forEach(btn => btn.disabled = true);
+  
+  if (optIdx === q.answer) {
+    score++;
+    document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('correct');
+    fb.textContent = '✓ Correct! ' + q.exp;
+    fb.className = 'feedback show correct-fb';
+  } else {
+    document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('wrong');
+    document.getElementById(`opt-${qIdx}-${q.answer}`).classList.add('correct');
+    fb.textContent = '✗ Incorrect. ' + q.exp;
+    fb.className = 'feedback show wrong-fb';
+  }
+  
+  nextBtn.disabled = false;
+  document.getElementById('score-disp-' + qIdx).textContent = `Score: ${score}/${qIdx + 1}`;
+}
+
+function nextQuestion() {
+  document.getElementById('qcard-' + current).classList.remove('active');
+  current++;
+  if (current < questions.length) {
+    document.getElementById('qcard-' + current).classList.add('active');
+    updateProgress();
+  } else {
+    showResults();
+  }
+}
+
+function updateProgress() {
+  const pct = (current / questions.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Question ${current + 1} of ${questions.length}`;
+}
+
+function showResults() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-label').textContent = 'Complete!';
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('score-big').textContent = score + '/' + questions.length;
+  document.getElementById('score-pct').textContent = pct + '% correct';
+  document.getElementById('r-correct').textContent = score;
+  document.getElementById('r-wrong').textContent = questions.length - score;
+  
+  let apEst, msg;
+  if (pct >= 80) { apEst = '5'; msg = 'Outstanding work! You have a strong command of Social Psychology and Personality. Keep reviewing and you\'re on track for a 5 on the AP Exam.'; }
+  else if (pct >= 65) { apEst = '4'; msg = 'Great job! You have a solid understanding of these topics. Review the questions you missed and focus on tricky concepts like elaboration likelihood model and cognitive dissonance.'; }
+  else if (pct >= 50) { apEst = '3'; msg = 'Good effort! You\'re passing, but there\'s room to improve. Re-read your notes on attribution biases, group behavior, and persuasion techniques.'; }
+  else if (pct >= 35) { apEst = '2'; msg = 'Keep studying! Focus on the core concepts: attribution errors, cognitive dissonance, conformity, and the bystander effect. Revisit your CED materials.'; }
+  else { apEst = '1–2'; msg = 'Don\'t give up — this material takes practice. Start by re-reading Topics 4.1–4.3 in your textbook and then retake the quiz.'; }
+  
+  document.getElementById('r-ap').textContent = apEst;
+  document.getElementById('grade-msg').textContent = msg;
+  document.getElementById('results-screen').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restartQuiz() {
+  current = 0; score = 0;
+  document.getElementById('results-screen').style.display = 'none';
+  document.querySelectorAll('.question-card').forEach((c, i) => {
+    c.classList.remove('active');
+    c.querySelectorAll('.option-btn').forEach(b => {
+      b.classList.remove('correct','wrong');
+      b.disabled = false;
+    });
+    const fb = c.querySelector('.feedback');
+    fb.className = 'feedback';
+    fb.textContent = '';
+    c.querySelector('[id^="next-btn"]').disabled = true;
+    c.querySelector('[id^="score-disp"]').textContent = `Score: 0/${i}`;
+  });
+  document.getElementById('qcard-0').classList.add('active');
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-label').textContent = 'Question 1 of 40';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
